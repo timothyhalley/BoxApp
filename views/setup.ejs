@@ -1,0 +1,53 @@
+<!-- views/setup.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./partials/head %>
+</head>
+
+
+<body class="container">
+
+    <header>
+        <% include ./partials/header %>
+    </header>
+
+    <main>
+        <div class="row">
+            <div class="col-sm-8">
+
+                <div class="col-sm-12">
+                    <h1><%= ejs_title %> </h1>
+                    <h3> Setup BoxApp: </h3>
+                    <p>Add input entries here...</p>
+
+                    <form name="inputDirectory" method="post">
+
+                        Input Directory: <input type="text" name="req_inputDir" value="<%= ejs_inputDir %>" /><br><br>
+                        BOX Location: <input type="text" name="req_boxLocation" value="<%= ejs_boxLocation %>" /><br><br>
+                        <input type="submit" onClick="window.location.refresh()" value="accept"/><br><br><hr>
+                    </form>
+                </div>
+
+            </div>
+            <div class="col-sm-4">
+
+                <div class="well">
+                    <h4>Default or Current Values</h4>
+                    </p></p>
+                    Current Input Directory: <%= ejs_currentDir %><br><br>
+                    </p>
+                    Box Parent Location: <%= ejs_boxLocation %><br><br>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <% include ./partials/footer %>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./partials/head %>
+
+    <script language="JavaScript">
+    	//var set_Path;
+   		function setValue() {	
+     		set_Path = document.getElementById("setPath").value;
+     	}
+     </script>
+</head>
+
+<body class="container">
+
+	<header>
+	    <% include ./partials/header %>
+	</header>
+
+	<h2> <%= ejs_Title %> </h2>
+	<h3> DEBUG PAGE: </h3>
+
+	<form name="clubform" method="post">
+	    <% for (var i in ejs_clubs){%>
+			Club Name: <input type="text" name="clubname[]" value="<%= ejs_clubs[i].clubname %>" /><br><br>
+	        Club Type: <input type="text" name="clubtype[]" value="<%= ejs_clubs[i].type %>" /><br><br>
+	    <%} %>
+	    <input type="submit" value="accept"/><br><br><hr>
+	</form>
+
+
+	<footer>
+	    <% include ./partials/footer %>
+	</footer>
+</body>
+	
+</html>

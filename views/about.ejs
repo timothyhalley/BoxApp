@@ -1,0 +1,49 @@
+<!-- views/pages/about.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include ./partials/head %>
+</head>
+<body class="container">
+
+    <header>
+        <% include ./partials/header %>
+    </header>
+
+    <main>
+        <div class="row">
+            <div class="col-sm-8">
+            
+                <div class="col-sm-12">
+                    <h1>Payment Card Industry Data Security Standard</h1>
+                    <p>The Payment Card Industry Data Security Standard (PCI DSS) is a proprietary information security standard for organizations that handle branded credit cards from the major card schemes including Visa, MasterCard, American Express, Discover, and JCB. Private label cards – those which aren't part of a major card scheme – are not included in the scope of the PCI DSS.
+
+                    The PCI Standard is mandated by the card brands and administered by the Payment Card Industry Security Standards Council. The standard was created to increase controls around cardholder data to reduce credit card fraud. Validation of compliance is performed annually, either by an external Qualified Security Assessor (QSA) that creates a Report on Compliance (ROC) for organizations handling large volumes of transactions, or by Self-Assessment Questionnaire (SAQ) for companies handling smaller volumes.</p>
+                </div>
+                
+            </div>
+            <div class="col-sm-4">
+                
+                <div class="well">
+                    <h3>Control objectives</h3>
+                    <p>
+                        Build and maintain a secure network 
+                        Protect cardholder data
+                        Maintain a vulnerability management program
+                        Implement strong access control measures
+                        Regularly monitor and test networks
+                        Maintain an information security policy
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <% include ./partials/footer %>
+    </footer>
+    
+</body>
+</html>

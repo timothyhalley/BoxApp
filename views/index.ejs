@@ -1,0 +1,47 @@
+<!--views/index.ejs-->
+
+<!DOCTYPE html>
+<html>
+	
+	<head>
+    	<% include ./partials/head %>
+	</head>
+
+	<body class="container">
+		<header>
+        	<% include ./partials/header %>
+    	</header>
+
+    	<main>
+        	<div class="row">
+            	<div class="col-sm-8">
+            
+					<% if (!user) { %>
+						<h2>Welcome! Please log in.</h2>
+						<p>
+						<a href="/">Home</a> | 
+						<a href="/login">Log In</a>
+						</p>
+					<% } else { %>
+						<h2>Hello, <%= user.name %>.</h2>
+						<code>
+							<%= JSON.stringify(body) %>
+						</code>
+						<p>
+						<a href="/">Home</a> | 
+						<a href="/account">Account</a> | 
+						<a href="/logout">Log Out</a> |
+						<a href="/getfile">Get File(s)</a> |
+						<a href="/sendfile">Send File</a>
+						</p>
+					<% } %>
+                   <ul>
+                </div>
+            </div>
+        </main>
+
+		<footer>
+        	<% include ./partials/footer %>
+    	</footer>
+	</body>
+</html>
