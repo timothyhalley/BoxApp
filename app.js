@@ -1,98 +1,19 @@
 //
 // - Concur Architecture Team: Move files to box via NODE project
-//
-// Box authentication based on --> https://github.com/bluedge/passport-box/tree/master/examples/login)
-//
 var express = require('express'),
     passport = require('passport'),
     morgan = require('morgan'),
     bodyParser = require('body-parser'),
-    multer = require('multer');
-var cookieParser = require('cookie-parser'),
+    multer = require('multer'),
+    cookieParser = require('cookie-parser'),
     session = require('express-session'),
-    methodOverride = require('method-override'),
-    BoxStrategy = require('passport-box').Strategy,
-    box_sdk = require('box-sdk');
-
-var box = box_sdk.Box();
-
-var BOX_CLIENT_ID = "ikjvh6ba6sku3d6oaf908f92lng5posn";
-var BOX_CLIENT_SECRET = "mzMx2HWLOnxnR0XTEA8YqMA4yeXz0R1h";
+    methodOverride = require('method-override');
 
 var _w = require('./_walk.js');
 var _m = require('./_misc.js');
 var _l = require('./_log.js');
-
-
-var mongoose = require('mongoose');
-var dbURI = 'mongodb://localhost/BoxApp';
-mongoose.connect(dbURI);
-mongoose.connection.on('connected', function() {
-    _l.logInfo('Mongoose connected to ' + dbURI);
-});
-var Schema = mongoose.Schema;
-var fileSchema = new mongoose.Schema({
-
-    name: {
-        type: String,
-        required: true
-    },
-    isFile: {
-        type: Boolean
-    },
-    dev: {
-        type: Number
-    },
-    ino: {
-        type: Number
-    },
-    mode: {
-        type: Number
-    },
-    nlink: {
-        type: Number
-    },
-    uid: {
-        type: Number
-    },
-    gid: {
-        type: Number
-    },
-    rdev: {
-        type: Number
-    },
-    size: {
-        type: Number
-    },
-    blksize: {
-        type: Number
-    },
-    blocks: {
-        type: Number
-    },
-    atime: {
-        type: Date
-    },
-    mtime: {
-        type: Date
-    },
-    ctime: {
-        type: Date
-    },
-    birthtime: {
-        type: Date
-    },
-    recdate: {
-        type: Date
-    }
-
-}, {
-    collection: 'file-data'
-});
-
-var fileData = mongoose.model('fileData', fileSchema);
-
-//var ejs = require('./libs/ejs.js')
+var _b = require('./_boxapi.js');
+var _d = require('./_dbapi.js');
 
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
@@ -105,32 +26,6 @@ function ensureAuthenticated(req, res, next) {
     }
     res.redirect('/login')
 }
-
-// Passport session setup.
-//   To support persistent login sessions, Passport needs to be able to
-//   serialize users into and deserialize users out of the session.  Typically,
-//   this will be as simple as storing the user ID when serializing, and finding
-//   the user by ID when deserializing.  However, since this example does not
-//   have a database of user records, the complete Box profile is
-//   serialized and deserialized.
-passport.serializeUser(function(user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function(obj, done) {
-    done(null, obj);
-});
-
-// Use the BoxStrategy within Passport.
-//   Strategies in Passport require a `verify` function, which accept
-//   credentials (in this case, an accessToken, refreshToken, and 37signals
-//   profile), and invoke a callback with a user object.
-passport.use(new BoxStrategy({
-    clientID: BOX_CLIENT_ID,
-    clientSecret: BOX_CLIENT_SECRET,
-    callbackURL: "http://127.0.0.1:3000/auth/box/callback"
-        //callbackURL: "https://www.box.com/api/oauth2/authorize"
-}, box.authenticate()));
 
 // Express Framework!
 var app = express();
@@ -162,21 +57,25 @@ app.locals.title = "BoxApp";
 //
 // Routes --
 app.get('/', function(req, res) {
+    var boxFolderID = 0; //Root level
     var opts = {
         user: req.user
     };
     if (req.user) {
-        var connection = box.getConnection(req.user.login);
-        connection.ready(function() {
-            connection.getFolderItems(0, null, function(err, result) {
-                if (err) {
-                    opts.body = err;
-                } else {
-                    opts.body = result;
-                }
-                res.render('index', opts);
-            });
-        });
+        _l.logDebug("Here is the req user login value --> " + req.user.login);
+        opts.body = _b.getFolderItems(req.user.login, boxFolderID);
+        // var connection = box.getConnection(req.user.login);
+        // connection.ready(function() {
+        //     connection.getFolderItems(0, null, function(err, result) {
+        //         if (err) {
+        //             opts.body = err;
+        //         } else {
+        //             opts.body = result;
+        //         }
+        //         res.render('index', opts);
+        //     });
+        // });
+        res.render('index', opts);
     } else {
         res.render('index', opts);
     }
@@ -272,44 +171,16 @@ app.get('/start', function(req, res) {
             list.push(sobj['name']);
 
             //write this to mongodb
-            var fdata = new fileData(sobj);
-            fdata.save();
+            _d.dbSaveInfo(sobj);
+            // var fdata = new fileData(sobj);
+            // fdata.save();
 
-            //write this item to box
-            var opts = {
-                user: req.user
-            };
-            var fields = {
-              name: "LEGAL_TEST",
-              description: "@Concur @Tim Halley @Architecture Team"
-            };
-
-            if (req.user) {
-                var connection = box.getConnection(req.user.login);
-                connection.ready(function() {
-                    // id = 0 (root) or file number 7670081530
-                    //connection.getFolderInfo(7670081530, function(err, result) {
-                    // ****
-                    //createFolder: function (name, parent_id, done, config) {
-                    // ****
-                    //connection.createFolder("BOXAPI_TEST", 0, function(err, result) {
-                    // ****
-                    // Update folder information
-                    // {"type":"folder","id":"7670081530","sequence_id":"0","etag":"0","name":"LEGAL_TEST"}
-                    //updateFolder: function (id, fields, done, headers, config) {
-                    //connection.updateFolder(7670081530, fields, function(err, result) {
-                    connection.uploadFile(file_name, parent_id, opts, function(err, result) {
-                        if (err) {
-                            opts.body = err;
-                        } else {
-                            opts.body = result;
-                        }
-                    });
-                });
+            //write this to BOX.com
+            if (sobj['isFile']) {
+                _b.writeFile("This should be a file... " + sobj['name']);
             } else {
-                l.logDebug("You are not logged in!!!");
+                _b.writeDir("This should be a directory... " + sobj['name']);
             }
-
 
         } else {
 
@@ -352,8 +223,8 @@ app.get('/boxapi', function(req, res) {
         user: req.user
     };
     var fields = {
-      name: "LEGAL_TEST",
-      description: "@Concur @Tim Halley @Architecture Team"
+        name: "LEGAL_TEST",
+        description: "@Concur @Tim Halley @Architecture Team"
     };
     //var fields
     //var parent_id = 7670081530;
@@ -373,7 +244,7 @@ app.get('/boxapi', function(req, res) {
             // {"type":"folder","id":"7670081530","sequence_id":"0","etag":"0","name":"LEGAL_TEST"}
             //updateFolder: function (id, fields, done, headers, config) {
             connection.updateFolder(7670081530, fields, function(err, result) {
-            //connection.uploadFile(file_name, parent_id, opts, function(err, result) {
+                //connection.uploadFile(file_name, parent_id, opts, function(err, result) {
                 if (err) {
                     opts.body = err;
                 } else {
