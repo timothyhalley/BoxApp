@@ -17,8 +17,11 @@ var box = box_sdk.Box();
 var BOX_CLIENT_ID = "ikjvh6ba6sku3d6oaf908f92lng5posn";
 var BOX_CLIENT_SECRET = "mzMx2HWLOnxnR0XTEA8YqMA4yeXz0R1h";
 
-var _l = require('./_log.js');
+//Node Modules
+var _ = require('lodash');
 
+// Project Modules
+var _l = require('./_log.js');
 
 // ------------------- Passport authentication   --------------------
 //
@@ -53,7 +56,39 @@ passport.use(new BoxStrategy({
 
 
 // ------------------- File and Folder Functions --------------------
-exports.getFolderItems = function(userID, boxFolderID) {
+exports.searchBox = function(userID, svals, opts, next) {
+
+  /**
+   * Provides a simple way of finding items that are accessible in a given user’s Box account.
+   * @summary Search a user's account.
+   * @see {@link https://developers.box.com/docs/#search}
+   * @param {string} query - The search keyword.
+   * @param {?OptsSearch} opts - Additional search options.
+   * @param {requestCallback} done - The callback to invoke (with possible errors) when the request returns.
+   * @param {?RequestConfig} [config] - Configure the request behaviour.
+   */
+  //search: function (query, opts, done, config) {
+
+  // _(search).forEach(function(val){
+  //   _l.logInfo("Search item --> " + val);
+  // });
+  //sfld = "folder";
+  var connection = box.getConnection(userID);
+
+  connection.ready(function() {
+      var sparam = "query=" + svals;
+      _l.logWarn("Here is the search token --> " + sparam);
+      connection.search(sparam, opts, function(err, result) {
+          if (err) {
+              next(err);
+          } else {
+              next(result);
+          }
+      });
+  });
+}
+
+exports.getFolderItems = function(userID, boxFolderID, next) {
 
     /**
      * Retrieves the full metadata about a folder,
@@ -78,21 +113,44 @@ exports.getFolderItems = function(userID, boxFolderID) {
     connection.ready(function() {
         connection.getFolderInfo(boxFolderID = 0, function(err, result) {
             if (err) {
-                boxFolderList = err;
+                next(err);
             } else {
-                boxFolderList = result;
+                next(result);
             }
         });
     });
-    return boxFolderList;
 }
 
 
 exports.writeFile = function(msg) {
     _l.log(msg);
 };
-exports.writeDir = function(msg) {
-    _l.log(msg);
+
+exports.createFolder = function(boxFolderName, boxParentID) {
+
+	/**
+	 * Used to create a new empty folder. The new folder will be created inside of the
+	 * specified parent folder.
+	 * @summary Create a New Folder.
+	 * @see {@link https://developers.box.com/docs/#folders-create-a-new-folder}
+	 * @param {string} name - The folder's name.
+	 * @param {number} parent_id - The parent folder's ID.
+	 * @param {requestCallback} done - The callback to invoke (with possible errors) when the request returns.
+	 * @param {?RequestConfig} [config] - Configure the request behaviour.
+	 */
+	//createFolder: function (name, parent_id, done, config) {
+
+		var connection = box.getConnection(userID);
+
+    connection.ready(function() {
+        connection.createFolder(boxFolderName, boxParentID, function(err, result) {
+            if (err) {
+                boxFolderList = err;
+            } else {
+                boxFolderList = result;
+            }
+        });
+    });
 };
 
 //write this item to box

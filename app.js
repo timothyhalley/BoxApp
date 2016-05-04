@@ -9,6 +9,11 @@ var express = require('express'),
     session = require('express-session'),
     methodOverride = require('method-override');
 
+// Node Modules Utils
+var fs = require('fs');
+
+
+// Project Modules
 var _w = require('./_walk.js');
 var _m = require('./_misc.js');
 var _l = require('./_log.js');
@@ -59,26 +64,23 @@ app.locals.title = "BoxApp";
 app.get('/', function(req, res) {
     var boxFolderID = 0; //Root level
     var opts = {
-        user: req.user
+        user: req.user,
+        body: "BOX.COM -->"
     };
     if (req.user) {
-        _l.logDebug("Here is the req user login value --> " + req.user.login);
-        opts.body = _b.getFolderItems(req.user.login, boxFolderID);
-        // var connection = box.getConnection(req.user.login);
-        // connection.ready(function() {
-        //     connection.getFolderItems(0, null, function(err, result) {
-        //         if (err) {
-        //             opts.body = err;
-        //         } else {
-        //             opts.body = result;
-        //         }
-        //         res.render('index', opts);
-        //     });
-        // });
-        res.render('index', opts);
+        _b.getFolderItems(req.user.login, boxFolderID, function(err, result) {
+            if (err) {
+                opts.body = err;
+            } else {
+                opts.body = result;
+            }
+            res.render('index', opts);
+        });
+
     } else {
+        _l.logWarn("You are not logged in...");
         res.render('index', opts);
-    }
+    };
 });
 
 app.get('/account', ensureAuthenticated, function(req, res) {
@@ -133,12 +135,13 @@ app.get('/about', function(req, res) {
 //
 //  ****************************************************************************
 // Setup page
-app.get('/setup', function(req, res) {
+app.get('/setup', ensureAuthenticated, function(req, res) {
     res.render('setup', {
         ejs_title: app.locals.title,
         ejs_currentDir: app.locals.inputDir,
-        ejs_inputDir: "./",
-        ejs_boxLocation: app.locals.boxLocation
+        ejs_inputDir: app.locals.inputDir,
+        ejs_boxLocation: app.locals.boxLocation,
+        ejs_searchItems: null
     });
 });
 
@@ -148,12 +151,46 @@ app.post('/setup', function(req, res, next) {
     _l.log("JSON stringify = " + JSON.stringify(req.body));
     app.locals.inputDir = req.body.req_inputDir;
     app.locals.boxLocation = req.body.req_boxLocation;
-    res.redirect('/setup');
+
+    // check if Directory path is valid
+    fs.stat(app.locals.inputDir, (err, stat) => {
+        if (err) {
+            _l.logWarn("Input Dir is invalid!");
+        } else {
+            _.logWarn("Is this a directory --> " + stat.isDirectory());
+        }
+
+    });
+
+    // Check box folder and return ID
+    var opts = {
+        type: "folder"
+    };
+    if (req.user) {
+        _b.searchBox(req.user.login, app.locals.boxLocation, opts, function(err, result) {
+            if (err) {
+                opts.body = err;
+                _l.logErr("Error of search is ... - ", err);
+            } else {
+                opts.body = result;
+                _l.logInfo("Results of search is ... - " + result);
+            }
+            res.render('setup', {
+                ejs_title: app.locals.title,
+                ejs_currentDir: app.locals.inputDir,
+                ejs_inputDir: app.locals.inputDir,
+                ejs_boxLocation: app.locals.boxLocation,
+                ejs_searchItems: opts.body
+            });
+        });
+    } else {
+        res.redirect('/login');
+    }
 });
 
 //
 //  ****************************************************************************
-// Start Route proecessing
+// Start Route
 app.get('/start', function(req, res) {
 
     var list = [];
@@ -196,7 +233,7 @@ app.get('/start', function(req, res) {
 });
 
 app.get('/get-data', function(req, res, next) {
-    fileData.find()
+    file_Data.find()
         .then(function(doc) {
             res.render('get-data', {
                 ejs_items: doc

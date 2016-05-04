@@ -1,4 +1,30 @@
 <!--views/account.ejs-->
+<!DOCTYPE html>
+<html>
 
-<p>ID: <%= user.id %></p>
-<p>Name: <%= user.name %></p>
+<head>
+    <% include ./partials/head %>
+</head>
+
+<body class="container">
+    <header>
+        <% include ./partials/header %>
+    </header>
+
+    <main>
+
+        <p>ID:
+            <%= user.id %>
+        </p>
+        <p>Name:
+            <%= user.name %>
+        </p>
+
+    </main>
+
+    <footer>
+        <% include ./partials/footer %>
+    </footer>
+</body>
+
+</html>

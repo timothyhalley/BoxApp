@@ -23,6 +23,7 @@ var BUGS = pc.toUnicode('xn--jo8h');
 var UHNO = pc.toUnicode('xn--738h')
 var HOURGLASS = pc.toUnicode('xn--koh');
 var MICROSCOPE = pc.toUnicode('xn--cw8h');
+var BOMB = pc.toUnicode('xn--fs8h');
 
 exports.log = function(msg) {
 	if (msg.isArray) {
@@ -31,10 +32,10 @@ exports.log = function(msg) {
  	log.log(EYES + " " + msg);
 };
 exports.logWarn = function(msg) {
-    log.warn(msg);
+    log.warn(BOMB + " " + msg);
 };
 exports.logErr = function(msg) {
-    log.error(msg);
+    log.error(UHNO + " " + msg);
 };
 exports.logClr = function() {
     log.clear();
